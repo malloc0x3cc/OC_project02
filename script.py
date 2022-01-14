@@ -20,6 +20,7 @@ def scrapeBookInfos(book_url, csv_file):
 	category = "category"
 	review_rating = "review_rating"
 
+	# PUshing book infos in a row
 	csv_file.writerow([
 		book_url,
 		upc,
@@ -47,6 +48,7 @@ def findAllBooks(category_url):
 	
 	with open(f"{CSV_PATH}{file_name}.csv", 'w', newline='') as file:
 		writer = csv.writer(file)
+		# Top row
 		writer.writerow([
 			"product_page_url",
 			"universal_product_code (upc)",
@@ -62,7 +64,7 @@ def findAllBooks(category_url):
 
 		print(f"\nScraping {len(book_links)} books from {catalog_page}, please wait...")
 		for book in book_links:
-			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer)
+			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer) # Could be better / in a variable ?
 			print('.', end='', flush=True)
 
 def findAllCategories():
