@@ -132,3 +132,5 @@ dmypy.json
 notes
 .vscode/
 test.py
+*.csv
+CSV/
