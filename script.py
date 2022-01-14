@@ -13,6 +13,7 @@ def scrapeBookInfos(book_url, csv_file):
 	price_excluding_tax = td[2].text
 	number_available = td[5].text
 	image_url = f"{BASE_URL}{soup.find('img')['src'][6:]}"
+	title = soup.find('h1').text
 	
 	# TODO
 	product_description = "product_description"
@@ -22,7 +23,7 @@ def scrapeBookInfos(book_url, csv_file):
 	csv_file.writerow([
 		book_url,
 		upc,
-		soup.find('h1').text,
+		title,
 		price_including_tax,
 		price_excluding_tax,
 		number_available,
@@ -31,6 +32,10 @@ def scrapeBookInfos(book_url, csv_file):
 		review_rating,
 		image_url
 	])
+
+	# download image
+	r = requests.get(image_url, allow_redirects=True)
+	open(f"{CSV_PATH}{title}.jpg", 'wb').write(r.content)
 
 def findAllBooks(category_url):
 	# TODO: get books on all pages
@@ -80,9 +85,9 @@ def findAllCategories():
 
 def main():
 	categories = findAllCategories()
-	# findAllBooks(categories[0])
-	for category in categories:
-		findAllBooks(category)
+	findAllBooks(categories[0])
+	# for category in categories:
+		# findAllBooks(category)
 	print("\nDONE!")
 
 if __name__ == "__main__":
