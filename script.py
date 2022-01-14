@@ -1,9 +1,10 @@
-import os, requests, csv, re
+#!/usr/bin/python
+import os, requests, csv, re, time
 from bs4 import BeautifulSoup
 
 
 BASE_URL = "https://books.toscrape.com/"
-EXPORT_PATH = "./export/"
+EXPORT_PATH = "./exports/"
 
 def scrapeBookInfos(book_url, csv_file, folder_name):
 	soup = BeautifulSoup(requests.get(book_url).content, "html.parser")
@@ -89,8 +90,10 @@ def findAllCategories():
 	return links
 
 if __name__ == "__main__":
+	start_time = time.time()
 	categories = findAllCategories()
-	findAllBooks(categories[0])
-	# for category in categories:
-		# findAllBooks(category)
+	# findAllBooks(categories[0])
+	for category in categories:
+		findAllBooks(category)
 	print("\nDONE!")
+	print("--- %s seconds ---" % (time.time() - start_time))
