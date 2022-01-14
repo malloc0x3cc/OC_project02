@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 
 BASE_URL = "https://books.toscrape.com/"
-CSV_PATH = "./CSV/"
+EXPORT_PATH = "./export/"
 
 def scrapeBookInfos(book_url, csv_file, folder_name):
 	soup = BeautifulSoup(requests.get(book_url).content, "html.parser")
@@ -36,7 +36,7 @@ def scrapeBookInfos(book_url, csv_file, folder_name):
 
 	# download image
 	r = requests.get(image_url, allow_redirects=True)
-	open(f"{CSV_PATH}{folder_name}/{title}.jpg", 'wb').write(r.content)
+	open(f"{EXPORT_PATH}{folder_name}/{title}.jpg", 'wb').write(r.content)
 
 def findAllBooks(category_url):
 	# TODO: get books on all pages
@@ -47,11 +47,11 @@ def findAllBooks(category_url):
 	book_links = soup.findAll('div', attrs={'class' : 'image_container'})
 
 	try:
-		os.mkdir(f"{CSV_PATH}{file_name}/")
+		os.mkdir(f"{EXPORT_PATH}{file_name}/")
 	except FileExistsError:
-		print(f"\nAppending to '{CSV_PATH}{file_name}/'")
+		print(f"\nAppending to '{EXPORT_PATH}/{file_name}/'")
 	
-	with open(f"{CSV_PATH}{file_name}/{file_name}.csv", 'w', newline='') as file:
+	with open(f"{EXPORT_PATH}{file_name}/{file_name}.csv", 'w', newline='') as file:
 		writer = csv.writer(file)
 		# Top row
 		writer.writerow([
@@ -81,11 +81,11 @@ def findAllCategories():
 	links.pop(0)
 
 	try:
-		os.mkdir(CSV_PATH)
+		os.mkdir(EXPORT_PATH)
 	except FileExistsError:
-		print(f"The '{CSV_PATH}' directory already exists")
+		print(f"The '{EXPORT_PATH}' directory already exists")
 	else:
-		print(f"Successfully created the directory '{CSV_PATH}'")
+		print(f"Successfully created the directory '{EXPORT_PATH}'")
 	return links
 
 if __name__ == "__main__":
