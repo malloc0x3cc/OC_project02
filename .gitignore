@@ -133,4 +133,4 @@ notes
 .vscode/
 test.py
 *.csv
-CSV/
+exports/
