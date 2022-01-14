@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://books.toscrape.com/"
 CSV_PATH = "./CSV/"
 
-def scrapeBookInfos(book_url, csv_file):
+def scrapeBookInfos(book_url, csv_file, folder_name):
 	soup = BeautifulSoup(requests.get(book_url).content, "html.parser")
 	td = soup.find_all('td')
 	upc = td[0].text
@@ -20,7 +20,7 @@ def scrapeBookInfos(book_url, csv_file):
 	category = "category"
 	review_rating = "review_rating"
 
-	# PUshing book infos in a row
+	# Pushing book infos in a row
 	csv_file.writerow([
 		book_url,
 		upc,
@@ -36,7 +36,7 @@ def scrapeBookInfos(book_url, csv_file):
 
 	# download image
 	r = requests.get(image_url, allow_redirects=True)
-	open(f"{CSV_PATH}{title}.jpg", 'wb').write(r.content)
+	open(f"{CSV_PATH}{folder_name}/{title}.jpg", 'wb').write(r.content)
 
 def findAllBooks(category_url):
 	# TODO: get books on all pages
@@ -45,8 +45,13 @@ def findAllBooks(category_url):
 	
 	soup = BeautifulSoup(requests.get(catalog_page).content, "html.parser")
 	book_links = soup.findAll('div', attrs={'class' : 'image_container'})
+
+	try:
+		os.mkdir(f"{CSV_PATH}{file_name}/")
+	except FileExistsError:
+		print(f"\nAppending to '{CSV_PATH}{file_name}/'")
 	
-	with open(f"{CSV_PATH}{file_name}.csv", 'w', newline='') as file:
+	with open(f"{CSV_PATH}{file_name}/{file_name}.csv", 'w', newline='') as file:
 		writer = csv.writer(file)
 		# Top row
 		writer.writerow([
@@ -64,7 +69,7 @@ def findAllBooks(category_url):
 
 		print(f"\nScraping {len(book_links)} books from {catalog_page}, please wait...")
 		for book in book_links:
-			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer) # Could be better / in a variable ?
+			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, file_name) # Could be better / in a variable ?
 			print('.', end='', flush=True)
 
 def findAllCategories():
@@ -75,22 +80,17 @@ def findAllCategories():
 		links.append(s['href'])
 	links.pop(0)
 
-	if (links):
-		try:
-			os.mkdir(CSV_PATH)
-		except FileExistsError:
-			print(f"The '{CSV_PATH}' directory already exists")
-		else:
-			print(f"Successfully created the directory '{CSV_PATH}'")
-
+	try:
+		os.mkdir(CSV_PATH)
+	except FileExistsError:
+		print(f"The '{CSV_PATH}' directory already exists")
+	else:
+		print(f"Successfully created the directory '{CSV_PATH}'")
 	return links
 
-def main():
+if __name__ == "__main__":
 	categories = findAllCategories()
 	findAllBooks(categories[0])
 	# for category in categories:
 		# findAllBooks(category)
 	print("\nDONE!")
-
-if __name__ == "__main__":
-	main()
