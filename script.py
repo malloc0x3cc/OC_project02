@@ -14,6 +14,11 @@ def scrapeBookInfos(book_url, csv_file):
 	number_available = td[5].text
 	image_url = f"{BASE_URL}{soup.find('img')['src'][6:]}"
 	
+	# TODO
+	product_description = "product_description"
+	category = "category"
+	review_rating = "review_rating"
+
 	csv_file.writerow([
 		book_url,
 		upc,
@@ -21,22 +26,20 @@ def scrapeBookInfos(book_url, csv_file):
 		price_including_tax,
 		price_excluding_tax,
 		number_available,
-		"product_description",
-		"category",
-		"review_rating",
+		product_description,
+		category,
+		review_rating,
 		image_url
 	])
 
 def findAllBooks(category_url):
-	# - get books on all pages
+	# TODO: get books on all pages
 	file_name = category_url[25:].replace("/index.html", '')
-	link = ""
-	print("Finding books, please wait...")
-	
 	catalog_page = f"{BASE_URL}{category_url}"
-	print(f"Current page: {catalog_page}")
 	
 	soup = BeautifulSoup(requests.get(catalog_page).content, "html.parser")
+	book_links = soup.findAll('div', attrs={'class' : 'image_container'})
+	
 	with open(f"{CSV_PATH}{file_name}.csv", 'w', newline='') as file:
 		writer = csv.writer(file)
 		writer.writerow([
@@ -52,10 +55,10 @@ def findAllBooks(category_url):
 			"image_url"
 		])
 
-		for element in soup.findAll('div', attrs={'class' : 'image_container'}):
-			link = element.find_all('a', href=True)[0]['href'][9:]
-			print(f"Scraping {BASE_URL}catalogue/{link}...")
-			scrapeBookInfos(f"{BASE_URL}catalogue/{link}", writer)
+		print(f"\nScraping {len(book_links)} books from {catalog_page}, please wait...")
+		for book in book_links:
+			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer)
+			print('.', end='', flush=True)
 
 def findAllCategories():
 	soup = BeautifulSoup(requests.get(BASE_URL).content, "html.parser")
@@ -77,10 +80,10 @@ def findAllCategories():
 
 def main():
 	categories = findAllCategories()
-	findAllBooks(categories[0])
-	# for category in categories:
-		# findAllBooks(category)
-	print("DONE!")
+	# findAllBooks(categories[0])
+	for category in categories:
+		findAllBooks(category)
+	print("\nDONE!")
 
 if __name__ == "__main__":
 	main()
