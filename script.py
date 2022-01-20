@@ -9,17 +9,17 @@ EXPORT_PATH = "./exports/"
 def scrapeBookInfos(book_url, csv_file, folder_name):
 	soup = BeautifulSoup(requests.get(book_url).content, "html.parser")
 	td = soup.find_all('td')
+	p = soup.find_all('p')
+
 	upc = td[0].text
 	price_including_tax = td[3].text
 	price_excluding_tax = td[2].text
 	number_available = td[5].text
 	image_url = f"{BASE_URL}{soup.find('img')['src'][6:]}"
 	title = soup.find('h1').text
-	
-	# TODO
-	product_description = "product_description"
-	category = "category"
-	review_rating = "review_rating"
+	product_description = p[3].text
+	review_rating = p[2]['class'][1]
+	category = soup.find_all('a')[3].text
 
 	# Pushing book infos in a row
 	csv_file.writerow([
@@ -43,7 +43,7 @@ def findAllBooks(category_url):
 	# TODO: get books on all pages
 	file_name = category_url[25:].replace("/index.html", '')
 	catalog_page = f"{BASE_URL}{category_url}"
-	
+
 	soup = BeautifulSoup(requests.get(catalog_page).content, "html.parser")
 	book_links = soup.findAll('div', attrs={'class' : 'image_container'})
 
@@ -51,7 +51,7 @@ def findAllBooks(category_url):
 		os.mkdir(f"{EXPORT_PATH}{file_name}/")
 	except FileExistsError:
 		print(f"\nAppending to '{EXPORT_PATH}/{file_name}/'")
-	
+
 	with open(f"{EXPORT_PATH}{file_name}/{file_name}.csv", 'w', newline='') as file:
 		writer = csv.writer(file)
 		# Top row
@@ -76,7 +76,7 @@ def findAllBooks(category_url):
 def findAllCategories():
 	soup = BeautifulSoup(requests.get(BASE_URL).content, "html.parser")
 	links = []
-	
+
 	for s in soup.find_all(href=re.compile("category")):
 		links.append(s['href'])
 	links.pop(0)
@@ -92,8 +92,8 @@ def findAllCategories():
 if __name__ == "__main__":
 	start_time = time.time()
 	categories = findAllCategories()
-	# findAllBooks(categories[0])
-	for category in categories:
-		findAllBooks(category)
+	findAllBooks(categories[0])
+	# for category in categories:
+		# findAllBooks(category)
 	print("\nDONE!")
 	print("--- %s seconds ---" % (time.time() - start_time))
