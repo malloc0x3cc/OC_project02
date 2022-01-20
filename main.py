@@ -8,7 +8,9 @@ BASE_URL = "https://books.toscrape.com/"
 EXPORT_PATH = "./exports/"
 
 def findAllCategories():
-	soup = BeautifulSoup(requests.get(BASE_URL).content, "html.parser")
+	r = requests.get(BASE_URL)
+	r.encoding = 'utf-8'
+	soup = BeautifulSoup(r.content, "html.parser")
 	links = []
 
 	for s in soup.find_all(href=re.compile("category")):
@@ -29,7 +31,7 @@ if __name__ == "__main__":
 
 	threads = []
 	for category in categories:
-		t = threading.Thread(target=findAllBooks, args=(category, ), daemon=True)
+		t = threading.Thread(target=findAllBooks, args=(category, ))
 		threads.append(t)
 		t.start()
 

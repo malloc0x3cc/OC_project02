@@ -6,7 +6,9 @@ BASE_URL = "https://books.toscrape.com/"
 EXPORT_PATH = "./exports/"
 
 def scrapeBookInfos(book_url, csv_file, folder_name):
-	soup = BeautifulSoup(requests.get(book_url).content, "html.parser")
+	r = requests.get(book_url)
+	r.encoding = 'utf-8'
+	soup = BeautifulSoup(r.content, "html.parser")
 	td = soup.find_all('td')
 	p = soup.find_all('p')
 
@@ -48,18 +50,17 @@ def findAllBooks(category_url, current_page="index.html"):
 	try:
 		next_page = soup.find('li', {"class": "next"}).find('a')['href']
 	except AttributeError:
-		print("No more pages ahve been found.")
+		pass
 	else:
-		print(next_page)
 		findAllBooks(category_url.replace(current_page, next_page), next_page)
 
 
 	try:
 		os.mkdir(f"{EXPORT_PATH}{category}/")
 	except FileExistsError:
-		print(f"\nAppending to '{EXPORT_PATH}/{category}/'")
+		pass
 
-	with open(f"{EXPORT_PATH}{category}/{category}.csv", 'a', newline='') as file:
+	with open(f"{EXPORT_PATH}{category}/{category}.csv", 'a', newline='', encoding='utf-8') as file:
 		writer = csv.writer(file)
 		# Top row
 		if (os.stat(f"{EXPORT_PATH}{category}/{category}.csv").st_size == 0):
@@ -76,14 +77,15 @@ def findAllBooks(category_url, current_page="index.html"):
 				"image_url"
 			])
 
-		print(f"\nScraping {len(book_links)} books from {catalog_page}, please wait...")
-		threads = []
+		print(f"Scraping {len(book_links)} books from {catalog_page}, please wait...")
+		# threads = []
 		for book in book_links:
-			task_args = (f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, category)
-			t = threading.Thread(target=scrapeBookInfos, args=task_args, daemon=True)
-			threads.append(t)
-			t.start()
+			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, category)
+		# 	task_args = (f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, category)
+		# 	t = threading.Thread(target=scrapeBookInfos, args=task_args)
+		# 	threads.append(t)
+		# 	t.start()
 
-		# wait for the threads to complete
-		for t in threads:
-		    t.join()
+		# # wait for the threads to complete
+		# for t in threads:
+		#     t.join()

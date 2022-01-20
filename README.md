@@ -7,5 +7,5 @@ pip install -r requirements.txt
 ```
 Run the script:
 ```sh
-python script.py
+python main.py
 ```
