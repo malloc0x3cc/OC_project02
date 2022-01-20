@@ -39,34 +39,43 @@ def scrapeBookInfos(book_url, csv_file, folder_name):
 	r = requests.get(image_url, allow_redirects=True)
 	open(f"{EXPORT_PATH}{folder_name}/{title}.jpg", 'wb').write(r.content)
 
-def findAllBooks(category_url):
+def findAllBooks(category_url, current_page="index.html"):
 	# TODO: get books on all pages
-	file_name = category_url[25:].replace("/index.html", '')
+	file_name = category_url[25:].replace(f"/{current_page}", '')
 	catalog_page = f"{BASE_URL}{category_url}"
 
 	soup = BeautifulSoup(requests.get(catalog_page).content, "html.parser")
 	book_links = soup.findAll('div', attrs={'class' : 'image_container'})
 
 	try:
+		next_page = soup.find('li', {"class": "next"}).find('a')['href']
+	except AttributeError:
+		pass
+	else:
+		findAllBooks(category_url.replace(current_page, next_page), next_page)
+
+
+	try:
 		os.mkdir(f"{EXPORT_PATH}{file_name}/")
 	except FileExistsError:
 		print(f"\nAppending to '{EXPORT_PATH}/{file_name}/'")
 
-	with open(f"{EXPORT_PATH}{file_name}/{file_name}.csv", 'w', newline='') as file:
+	with open(f"{EXPORT_PATH}{file_name}/{file_name}.csv", 'a', newline='') as file:
 		writer = csv.writer(file)
 		# Top row
-		writer.writerow([
-			"product_page_url",
-			"universal_product_code (upc)",
-			"title",
-			"price_including_tax",
-			"price_excluding_tax",
-			"number_available",
-			"product_description",
-			"category",
-			"review_rating",
-			"image_url"
-		])
+		if (os.stat(f"{EXPORT_PATH}{file_name}/{file_name}.csv").st_size == 0):
+			writer.writerow([
+				"product_page_url",
+				"universal_product_code (upc)",
+				"title",
+				"price_including_tax",
+				"price_excluding_tax",
+				"number_available",
+				"product_description",
+				"category",
+				"review_rating",
+				"image_url"
+			])
 
 		print(f"\nScraping {len(book_links)} books from {catalog_page}, please wait...")
 		for book in book_links:
@@ -92,7 +101,8 @@ def findAllCategories():
 if __name__ == "__main__":
 	start_time = time.time()
 	categories = findAllCategories()
-	findAllBooks(categories[0])
+	findAllBooks(categories[1])
+	# findAllBooks(categories[3])
 	# for category in categories:
 		# findAllBooks(category)
 	print("\nDONE!")
