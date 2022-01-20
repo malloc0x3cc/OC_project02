@@ -40,12 +40,11 @@ def scrapeBookInfos(book_url, csv_file, folder_name):
 	open(f"{EXPORT_PATH}{folder_name}/{title}.jpg", 'wb').write(r.content)
 
 def findAllBooks(category_url, current_page="index.html"):
-	# TODO: get books on all pages
-	file_name = category_url[25:].replace(f"/{current_page}", '')
 	catalog_page = f"{BASE_URL}{category_url}"
 
 	soup = BeautifulSoup(requests.get(catalog_page).content, "html.parser")
 	book_links = soup.findAll('div', attrs={'class' : 'image_container'})
+	category = soup.find('li', {'class': "active"}).text
 
 	try:
 		next_page = soup.find('li', {"class": "next"}).find('a')['href']
@@ -56,14 +55,14 @@ def findAllBooks(category_url, current_page="index.html"):
 
 
 	try:
-		os.mkdir(f"{EXPORT_PATH}{file_name}/")
+		os.mkdir(f"{EXPORT_PATH}{category}/")
 	except FileExistsError:
-		print(f"\nAppending to '{EXPORT_PATH}/{file_name}/'")
+		print(f"\nAppending to '{EXPORT_PATH}/{category}/'")
 
-	with open(f"{EXPORT_PATH}{file_name}/{file_name}.csv", 'a', newline='') as file:
+	with open(f"{EXPORT_PATH}{category}/{category}.csv", 'a', newline='') as file:
 		writer = csv.writer(file)
 		# Top row
-		if (os.stat(f"{EXPORT_PATH}{file_name}/{file_name}.csv").st_size == 0):
+		if (os.stat(f"{EXPORT_PATH}{category}/{category}.csv").st_size == 0):
 			writer.writerow([
 				"product_page_url",
 				"universal_product_code (upc)",
@@ -79,7 +78,7 @@ def findAllBooks(category_url, current_page="index.html"):
 
 		print(f"\nScraping {len(book_links)} books from {catalog_page}, please wait...")
 		for book in book_links:
-			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, file_name) # Could be better / in a variable ?
+			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, category) # Could be better / in a variable ?
 			print('.', end='', flush=True)
 
 def findAllCategories():
@@ -102,7 +101,6 @@ if __name__ == "__main__":
 	start_time = time.time()
 	categories = findAllCategories()
 	findAllBooks(categories[1])
-	# findAllBooks(categories[3])
 	# for category in categories:
 		# findAllBooks(category)
 	print("\nDONE!")
