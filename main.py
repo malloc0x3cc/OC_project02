@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from find_books import findAllBooks
-import os, requests, csv, re, time
+import os, requests, csv, re, time, threading
 from bs4 import BeautifulSoup
 
 
@@ -26,8 +26,16 @@ def findAllCategories():
 if __name__ == "__main__":
 	start_time = time.time()
 	categories = findAllCategories()
-	findAllBooks(categories[1])
-	# for category in categories:
-		# findAllBooks(category)
+
+	threads = []
+	for category in categories:
+		t = threading.Thread(target=findAllBooks, args=(category, ), daemon=True)
+		threads.append(t)
+		t.start()
+
+	# wait for the threads to complete
+	for t in threads:
+		t.join()
+
 	print("\nDONE!")
 	print("--- %s seconds ---" % (time.time() - start_time))
