@@ -49,16 +49,14 @@ def findAllBooks(category_url, current_page="index.html"):
 
 	try:
 		next_page = soup.find('li', {"class": "next"}).find('a')['href']
-	except AttributeError:
-		pass
-	else:
 		findAllBooks(category_url.replace(current_page, next_page), next_page)
-
+	except AttributeError:
+		print("No 'next' button found")
 
 	try:
 		os.mkdir(f"{EXPORT_PATH}{category}/")
 	except FileExistsError:
-		pass
+		print("File already exists")
 
 	with open(f"{EXPORT_PATH}{category}/{category}.csv", 'a', newline='', encoding='utf-8') as file:
 		writer = csv.writer(file)
@@ -78,14 +76,5 @@ def findAllBooks(category_url, current_page="index.html"):
 			])
 
 		print(f"Scraping {len(book_links)} books from {catalog_page}, please wait...")
-		# threads = []
 		for book in book_links:
 			scrapeBookInfos(f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, category)
-		# 	task_args = (f"{BASE_URL}catalogue/{book.find_all('a', href=True)[0]['href'][9:]}", writer, category)
-		# 	t = threading.Thread(target=scrapeBookInfos, args=task_args)
-		# 	threads.append(t)
-		# 	t.start()
-
-		# # wait for the threads to complete
-		# for t in threads:
-		#     t.join()
