@@ -134,3 +134,4 @@ notes
 test.py
 *.csv
 exports/
+.idea/
