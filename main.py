@@ -19,10 +19,9 @@ def findAllCategories():
 
 	try:
 		os.mkdir(EXPORT_PATH)
+		print(f"Successfully created the directory '{EXPORT_PATH}'")
 	except FileExistsError:
 		print(f"The '{EXPORT_PATH}' directory already exists")
-	else:
-		print(f"Successfully created the directory '{EXPORT_PATH}'")
 	return links
 
 if __name__ == "__main__":
